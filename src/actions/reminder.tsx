@@ -1,5 +1,5 @@
-import { JobContext } from "@devvit/public-api";
-import { checkComments, checkPost } from "../list_check/list_check.js";
+import { JobContext, Post } from "@devvit/public-api";
+import { checkComments } from "../list_check/list_check.js";
 import { getCommentIgnorePreference, getCommentSettings } from "../settings/getters.js";
 import { DateTime } from "ts-luxon";
 
@@ -8,23 +8,18 @@ import { DateTime } from "ts-luxon";
  * - check if the post still matches the requirements and no comments that match the comment requirements have been made.
  * - schedule a reminder removal if needed.
  */
-export async function sendReminder(context: JobContext, postId: string, removeDelay: number, message: string,
-                                   rawOptions: string[], userFlairText: string, userFlairID: string): Promise<void> {
-	console.log("Processing reminder...");
+export async function sendReminder(context: JobContext, post: Post, removeDelay: number, message: string,
+                                   rawOptions: string[], now: DateTime): Promise<void> {
+	console.info(`${post.id}: Processing Reminder`);
 
-	const startTime = performance.now()
-	const post = await context.reddit.getPostById(postId.toString());
-
-	// Check if the post still matches the requirements and no comments that match the comment requirements have been made.
-	if (!(await checkPost(context, post, userFlairText, userFlairID)) || await checkComments(context, post,
-		await getCommentSettings(context), await getCommentIgnorePreference(context))) {
+	// Check if the post still matches the requirements and no comments that match the comment requirements have been made
+	if (await checkComments(context, post, await getCommentSettings(context),
+		await getCommentIgnorePreference(context))) {
+		console.info(`${post.id}: Reminder Cancelled (post doesn't match requirements)`);
 		return;
 	}
 
-	const endTime = performance.now()
-	console.log(`Call to doSomething took ${endTime - startTime} milliseconds`)
-
-	console.log("Sending reminder...");
+	console.info(`${post.id}: Sending Reminder`);
 
 	const comment = await post.addComment({
 		text: message
@@ -45,7 +40,7 @@ export async function sendReminder(context: JobContext, postId: string, removeDe
 
 	// Auto-remove reminder
 	if (removeDelay > 0) {
-		const now = DateTime.now();
+		console.info(`${post.id}: Scheduling Reminder Removal (${comment.id})`);
 
 		const jobId = await context.scheduler.runJob({
 			name: "reminder-removal", data: {

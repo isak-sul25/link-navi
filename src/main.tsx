@@ -26,7 +26,6 @@ addSettings();
  */
 Devvit.addTrigger({
 	event: "PostCreate", onEvent: async(event, context) => {
-		console.log("New Post.");
 		const postV2 = event.post;
 
 		if (!postV2) {
@@ -45,15 +44,13 @@ Devvit.addTrigger({
 			userFlairID = userFlair.templateId;
 		}
 
-		console.log("Processing new post...");
-
 		// Check white/black list and ignore preference
 		if (!(await checkPost(context, post, userFlairText, userFlairID))) {
-			console.log("New post doesn't match requirements - ignoring...");
+			console.info(`${postId}: Ignoring (post doesn't match requirements)`);
 			return;
 		}
 
-		console.log("New post matches requirements - checking for reminder/action...");
+		console.info(`${postId}: Processing (post matches requirements)`);
 
 		const reminderSettings = await getReminderSettings(post, context);
 		const actionSettings = await getActionSettings(context);
@@ -64,7 +61,7 @@ Devvit.addTrigger({
 
 			// Short delay jobs can fail, send reminder immediately if less than 10 minutes
 			if (reminderSettings.delay >= 10) {
-				console.log("Scheduling reminder.");
+				console.info(`${postId}: Scheduling Reminder`);
 				const jobId = await context.scheduler.runJob({
 					name: "reminder", data: {
 						postId: postId,
@@ -76,15 +73,14 @@ Devvit.addTrigger({
 					}, runAt: now.plus({minutes: reminderSettings.delay}).toJSDate()
 				});
 			} else {
-				console.log("Sending reminder...");
-				await sendReminder(context, postId, reminderSettings.removeDelay, reminderSettings.message,
-					reminderSettings.options, userFlairText, userFlairID);
+				await sendReminder(context, post, reminderSettings.removeDelay, reminderSettings.message,
+					reminderSettings.options, now);
 			}
 		}
 
 		// Schedule Action
 		if (actionSettings.action && !(actionSettings.action == "do_nothing")) {
-			console.log("Scheduling action.");
+			console.info(`${postId}: Scheduling Action (${actionSettings.action})`);
 			const jobId = await context.scheduler.runJob({
 				name: "action", data: {
 					postId: postId, userFlairText: userFlairText, userFlairID: userFlairID
@@ -104,7 +100,7 @@ Devvit.addSchedulerJob({
 	name: "reminder", onRun: async(event, context) => {
 		const {postId, removeDelay, message, rawOptions, userFlairText, userFlairID} = event.data!;
 
-		console.log("Processing reminder...");
+		console.info(`${postId}: Processing Reminder`);
 
 		if (!postId || !message) {
 			return;
@@ -115,10 +111,11 @@ Devvit.addSchedulerJob({
 		// Check if the post still matches the requirements and no comments that match the comment requirements have been made.
 		if (!(await checkPost(context, post, String(userFlairText), String(userFlairID))) || await checkComments(
 			context, post, await getCommentSettings(context), await getCommentIgnorePreference(context))) {
+			console.info(`${postId}: Reminder Cancelled (post doesn't match requirements)`);
 			return;
 		}
 
-		console.log("Sending reminder...");
+		console.info(`${postId}: Sending Reminder`);
 
 		const comment = await post.addComment({
 			text: message.toString()
@@ -139,6 +136,7 @@ Devvit.addSchedulerJob({
 
 		// Auto-remove reminder
 		if (Number(removeDelay) > 0) {
+			console.info(`${postId}: Scheduling Reminder Removal (${comment.id})`);
 			const now = DateTime.now();
 
 			const jobId = await context.scheduler.runJob({
@@ -158,7 +156,7 @@ Devvit.addSchedulerJob({
 	name: "reminder-removal", onRun: async(event, context) => {
 		const {commentID} = event.data!;
 
-		console.log("Processing reminder removal...");
+		console.info(`${commentID}: Processing Reminder Removal`);
 
 		if (!commentID) {
 			return;
@@ -167,12 +165,12 @@ Devvit.addSchedulerJob({
 		const comment = await context.reddit.getCommentById(commentID.toString());
 
 		if (comment.isRemoved() || comment.isSpam() || comment.bannedAtUtc) {
-			console.log("Reminder is already removed.");
+			console.error(`${commentID}: Reminder Already Removed`);
 			return;
 		}
 
 		await comment.remove(false);
-		console.log("Reminder removed.");
+		console.info(`${commentID}: Reminder Removed`);
 	}
 });
 
@@ -185,7 +183,7 @@ Devvit.addSchedulerJob({
 	name: "action", onRun: async(event, context) => {
 		const {postId, userFlairText, userFlairID} = event.data!;
 
-		console.log("Processing action...");
+		console.info(`${postId}: Processing Action`);
 
 		if (!postId) {
 			return;
@@ -196,10 +194,11 @@ Devvit.addSchedulerJob({
 		// Check if the post still matches the requirements and no comments that match the comment requirements have been made.
 		if (!(await checkPost(context, post, String(userFlairText), String(userFlairID))) || await checkComments(
 			context, post, await getCommentSettings(context), await getCommentIgnorePreference(context))) {
+			console.info(`${postId}: Action Cancelled (post doesn't match requirements)`);
 			return;
 		}
 
-		console.log("Executing action...");
+		console.info(`${postId}: Executing Action`);
 		await executeAction(context, post);
 	}
 });

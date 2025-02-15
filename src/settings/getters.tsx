@@ -13,8 +13,8 @@ export async function getListPreference(context: any) {
  * Returns the IgnorePreference settings: whether to ignore removed/filtered posts or both.
  */
 export async function getIgnorePreference(context: any) {
-	const ignorePreference = await context.settings.get("ignore-preference") || ["both"];
-	return Array.isArray(ignorePreference) ? String(ignorePreference[0]) : String(ignorePreference);
+	const ignorePreference = await context.settings.get("ignore-preference") || [];
+	return Array.isArray(ignorePreference) ? ignorePreference : [];
 }
 
 /**

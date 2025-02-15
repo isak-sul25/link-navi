@@ -85,19 +85,18 @@ export async function checkPost(context: any, post: Post, userFlairText: string,
 	// If removed/deleted
 	if (removedByCategory) {
 
-		// Return false if deleted
-		if (removedByCategory == "deleted") {
-			console.log("Post is deleted.");
-			return false;
+		// Continue processing if removed and removed posts are not ignored
+		if ((removedByCategory == "author" || removedByCategory == "moderator") && !ignorePreference.includes("removed")) {
+
+			// Continue processing if removed by Reddit and posts removed by Reddit are not ignored
+		} else if (removedByCategory == "reddit" && !ignorePreference.includes("reddit")) {
 
 			// Continue processing if filtered and filtered posts are not ignored
-		} else if (removedByCategory == "automod_filtered" && !(ignorePreference == "both" || ignorePreference
-		                                                        == "filtered")) {
-		} else if (ignorePreference != "both" && ignorePreference != "removed") {
-			// Continue processing if removed and removed posts are not ignored
+		} else if (removedByCategory == "automod_filtered" && !ignorePreference.includes("filtered")) {
 
-		} else { // Return false if removed and removed posts are ignored
-			console.log("Post is removed.");
+			// Return false if removed/deleted and removed posts are ignored
+		} else {
+			console.info(`${post.id}: Ignoring (post is removed/deleted: ${removedByCategory})`);
 			return false;
 		}
 	}
@@ -146,12 +145,12 @@ export async function checkComments(context: JobContext, post: Post, settings: {
 
 			// Skip comment if comment is removed and removed comments are ignored
 			if (isRemoved && (ignorePreference == "both" || ignorePreference == "removed")) {
-				console.log("Comment is removed.");
+				console.info(`${comment.id}: Ignoring (comment removed)`);
 				continue;
 
 				// Skip comment if comment is filtered and filtered comments are ignored
 			} else if (bannedAt && (ignorePreference == "both" || ignorePreference == "filtered")) {
-				console.log("Comment is filtered.");
+				console.info(`${comment.id}: Ignoring (comment filtered)`);
 				continue;
 			}
 		}

@@ -25,7 +25,7 @@ export async function executeAction(context: JobContext, post: Post) {
 				});
 				return;
 			} else {
-				console.log(`No post flair with ID '${actionSettings.changeFlairID}' exists.`);
+				console.error(`No post flair with ID '${actionSettings.changeFlairID}' exists.`);
 				reportReason = "invalid change flair ID";
 			}
 
@@ -74,7 +74,7 @@ export async function executeAction(context: JobContext, post: Post) {
 					}
 					return;
 				} else {
-					console.log(`No removal reason with title '${actionSettings.removalReason}' exists.`);
+					console.error(`No removal reason with title '${actionSettings.removalReason}' exists.`);
 					reportReason = `invalid removal reason`;
 				}
 			} else {

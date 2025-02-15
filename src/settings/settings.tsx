@@ -18,15 +18,13 @@ const addSettings = () => {
 		}, { // Ignore removed and/or filtered posts
 			type: "select",
 			name: "ignore-preference",
-			required: true,
-			defaultValue: ["both"], // Default option
-			label: "Ignore Removed/Filtered Posts?",
-			helpText: "Select whether to ignore removed posts, ones filtered by AutoModerator, or both.",
+			multiSelect: true,
+			label: "Ignore Removed Posts?",
+			helpText: "Select whether to ignore removed posts or ones filtered by AutoModerator.",
 			options: [
-				{label: "None", value: "none"},
 				{label: "Removed", value: "removed"},
-				{label: "Filtered", value: "filtered"},
-				{label: "Both", value: "both"}
+				{label: "Removed by Reddit (e.g. crowd control)", value: "reddit"},
+				{label: "Filtered", value: "filtered"}
 			]
 		}, // Whitelist Settings
 		{

@@ -4,7 +4,7 @@ Have you ever had to remind someone to make a comment under their post and
 then check if they have actually done it? No? - well, this is an app that
 does just that, as niche as it is.
 
-[post_requirements]: https://i.imgur.com/3nPelHo.png
+[post_requirements]: https://i.imgur.com/M4TQNqB.png
 
 [comment_requirements]: https://i.imgur.com/Gbne9aN.png
 
@@ -14,24 +14,15 @@ does just that, as niche as it is.
 
 # What's New?
 
-### New Post Requirements: Post Body Regex
+### Updated Ignore Post Options
 
-You can now set a post body Regex requirements for the White/Black lists.
+You can now choose to ignore removed posts, posts removed by Reddit's filters 
+(e.g. crowd control) or ones filtered by AutoModerator.
 
-### Reminder Comment Delay Fix
+### GitHub Repository
 
-It seems that tasks (reminders, reminder removals, actions) with short 
-delays (under 10-15 minutes) can sometimes fail to execute. This might not 
-be an issue for smaller/less active subreddits, but if you are experiencing 
-problems, try a larger delay.
-
-To somehow alleviate this, reminders with a delay of under 10 minutes will 
-instead be sent immediately.
-
-### Archive ModMail Option
-
-If using the remove and notify via ModMail action, you can now set a toggle 
-to automatically archive the conversation.
+The app code is now publicly available on [GitHub](https://github.com/isak-sul25/link-navi)
+for all interested in the meat and bones of it.
 
 # How It Works?
 
@@ -58,7 +49,7 @@ The Whitelist lets you pick what posts you want the app to act on, the
 Blacklist does the opposite - select what posts the app should ignore. You
 can use either one, both or none if you want to disable the app.
 
-Optionally, you can choose to ignore removed and or filtered posts. Deleted
+Optionally, you can choose to ignore removed and/or filtered posts. Deleted
 posts are always ignored.
 
 Currently, you can set:
@@ -185,6 +176,7 @@ counterintuitive, but if it's something you need for your use case, let me know!
 # Feedback
 
 You can contact me (u/EternalGreenX) if you have any feedback or suggestions.
+You can also check my spaghetti code on [GitHub](https://github.com/isak-sul25/link-navi).
 
 # Changelog
 
@@ -217,3 +209,7 @@ You can contact me (u/EternalGreenX) if you have any feedback or suggestions.
   * Reminder Comment Delay Fix: reminders with a delay of under 10 minutes will 
 instead be sent immediately.
   * Archive ModMail Option
+* v1.2: the "*removed*" update:
+  * Updated Option to Ignore Removed/Filtered Posts: can separately ignore 
+    posts removed by Reddit (e.g. crowd control)
+  * Published GitHub repository
